@@ -13,10 +13,10 @@ echo gRPC service written in Golang
 
 ## Build echo service image
 ```bash
-docker build -t fgarciacode/grpc-echo 
+docker build  --platform linux/amd64 -t fgarciacode/grpc-echo:v0.1.2 .
 ```
 
 ## Run echo service
 ```bash
-docker run --name echo-service -d -p 5001:5001 fgarciacode/grpc-echo
+docker run --name echo-service -d -p 5001:5001 fgarciacode/grpc-echo:v0.1.2
 ```

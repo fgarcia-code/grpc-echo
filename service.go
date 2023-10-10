@@ -9,6 +9,8 @@ import (
 	"time"
 
 	api "github.com/fgarcia-code/grpc-echo/pkg/grpc/echo"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -56,6 +58,10 @@ func (s *server) EchoBidiStream(stream api.EchoService_EchoBidiStreamServer) err
 		stream.Send(message)
 	}
 	return nil
+}
+
+func (s *server) EchoStatus(ctx context.Context, statusCode *api.StatusCode) (*api.StatusCode, error) {
+	return statusCode, status.Error(codes.Code(statusCode.Code.Number()), statusCode.Code.String())
 }
 
 func main() {

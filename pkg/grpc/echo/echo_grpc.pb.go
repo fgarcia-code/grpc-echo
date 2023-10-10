@@ -26,6 +26,7 @@ type EchoServiceClient interface {
 	EchoClientStream(ctx context.Context, opts ...grpc.CallOption) (EchoService_EchoClientStreamClient, error)
 	EchoServerStream(ctx context.Context, in *EchoMessage, opts ...grpc.CallOption) (EchoService_EchoServerStreamClient, error)
 	EchoBidiStream(ctx context.Context, opts ...grpc.CallOption) (EchoService_EchoBidiStreamClient, error)
+	EchoStatus(ctx context.Context, in *StatusCode, opts ...grpc.CallOption) (*StatusCode, error)
 }
 
 type echoServiceClient struct {
@@ -142,6 +143,15 @@ func (x *echoServiceEchoBidiStreamClient) Recv() (*EchoMessage, error) {
 	return m, nil
 }
 
+func (c *echoServiceClient) EchoStatus(ctx context.Context, in *StatusCode, opts ...grpc.CallOption) (*StatusCode, error) {
+	out := new(StatusCode)
+	err := c.cc.Invoke(ctx, "/echo.EchoService/EchoStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EchoServiceServer is the server API for EchoService service.
 // All implementations must embed UnimplementedEchoServiceServer
 // for forward compatibility
@@ -150,6 +160,7 @@ type EchoServiceServer interface {
 	EchoClientStream(EchoService_EchoClientStreamServer) error
 	EchoServerStream(*EchoMessage, EchoService_EchoServerStreamServer) error
 	EchoBidiStream(EchoService_EchoBidiStreamServer) error
+	EchoStatus(context.Context, *StatusCode) (*StatusCode, error)
 	mustEmbedUnimplementedEchoServiceServer()
 }
 
@@ -168,6 +179,9 @@ func (UnimplementedEchoServiceServer) EchoServerStream(*EchoMessage, EchoService
 }
 func (UnimplementedEchoServiceServer) EchoBidiStream(EchoService_EchoBidiStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method EchoBidiStream not implemented")
+}
+func (UnimplementedEchoServiceServer) EchoStatus(context.Context, *StatusCode) (*StatusCode, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EchoStatus not implemented")
 }
 func (UnimplementedEchoServiceServer) mustEmbedUnimplementedEchoServiceServer() {}
 
@@ -273,6 +287,24 @@ func (x *echoServiceEchoBidiStreamServer) Recv() (*EchoMessage, error) {
 	return m, nil
 }
 
+func _EchoService_EchoStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StatusCode)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EchoServiceServer).EchoStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/echo.EchoService/EchoStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EchoServiceServer).EchoStatus(ctx, req.(*StatusCode))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EchoService_ServiceDesc is the grpc.ServiceDesc for EchoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -283,6 +315,10 @@ var EchoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "EchoUnary",
 			Handler:    _EchoService_EchoUnary_Handler,
+		},
+		{
+			MethodName: "EchoStatus",
+			Handler:    _EchoService_EchoStatus_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
